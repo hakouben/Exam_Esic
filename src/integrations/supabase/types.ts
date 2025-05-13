@@ -9,7 +9,142 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      hosting_plans: {
+        Row: {
+          bandwidth: string
+          cpu_cores: number
+          features: Json
+          id: string
+          name: string
+          popular: boolean | null
+          price: number
+          ram_mb: number
+          storage_gb: number
+          type: string
+        }
+        Insert: {
+          bandwidth: string
+          cpu_cores: number
+          features?: Json
+          id?: string
+          name: string
+          popular?: boolean | null
+          price: number
+          ram_mb: number
+          storage_gb: number
+          type: string
+        }
+        Update: {
+          bandwidth?: string
+          cpu_cores?: number
+          features?: Json
+          id?: string
+          name?: string
+          popular?: boolean | null
+          price?: number
+          ram_mb?: number
+          storage_gb?: number
+          type?: string
+        }
+        Relationships: []
+      }
+      orders: {
+        Row: {
+          created_at: string
+          id: string
+          ip_address: string | null
+          plan_id: string
+          ssh_credentials: Json | null
+          status: string
+          user_id: string
+          voucher_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          plan_id: string
+          ssh_credentials?: Json | null
+          status?: string
+          user_id: string
+          voucher_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          plan_id?: string
+          ssh_credentials?: Json | null
+          status?: string
+          user_id?: string
+          voucher_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "hosting_plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_voucher_id_fkey"
+            columns: ["voucher_id"]
+            isOneToOne: false
+            referencedRelation: "vouchers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      users: {
+        Row: {
+          email: string
+          id: string
+          name: string | null
+          role: string
+        }
+        Insert: {
+          email: string
+          id: string
+          name?: string | null
+          role?: string
+        }
+        Update: {
+          email?: string
+          id?: string
+          name?: string | null
+          role?: string
+        }
+        Relationships: []
+      }
+      vouchers: {
+        Row: {
+          code: string
+          discount: number
+          id: string
+          is_used: boolean | null
+        }
+        Insert: {
+          code: string
+          discount: number
+          id?: string
+          is_used?: boolean | null
+        }
+        Update: {
+          code?: string
+          discount?: number
+          id?: string
+          is_used?: boolean | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

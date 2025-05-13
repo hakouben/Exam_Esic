@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Admin from "./pages/Admin";
+import AdminDashboard from "./pages/AdminDashboard";
 import OrderPage from "./pages/OrderPage";
 import NotFound from "./pages/NotFound";
 
@@ -23,7 +24,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/admin" element={<Admin />} />
+          <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/order/:planId" element={<OrderPage />} />
           <Route path="/shared-hosting" element={<Index />} />
           <Route path="/vps" element={<Index />} />

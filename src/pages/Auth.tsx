@@ -11,12 +11,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { login, isAuthenticated } from "@/lib/authUtils";
 import { Server } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [loginError, setLoginError] = useState("");
+  const [registerError, setRegisterError] = useState("");
+  
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -34,9 +38,10 @@ const Auth = () => {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
+    setLoginError("");
     
     if (!email || !password) {
-      toast.error("Please fill in all fields");
+      setLoginError("Please fill in all fields");
       return;
     }
     
@@ -46,20 +51,26 @@ const Auth = () => {
       toast.success("Login successful!");
       navigate("/dashboard");
     } else {
-      toast.error("Invalid email or password");
+      setLoginError("Invalid email or password");
     }
   };
 
   const handleRegister = (e: React.FormEvent) => {
     e.preventDefault();
+    setRegisterError("");
     
     if (!email || !password || !name || !confirmPassword) {
-      toast.error("Please fill in all fields");
+      setRegisterError("Please fill in all fields");
       return;
     }
     
     if (password !== confirmPassword) {
-      toast.error("Passwords do not match");
+      setRegisterError("Passwords do not match");
+      return;
+    }
+    
+    if (password.length < 8) {
+      setRegisterError("Password must be at least 8 characters long");
       return;
     }
     
@@ -100,6 +111,11 @@ const Auth = () => {
               
               <TabsContent value="login">
                 <form onSubmit={handleLogin} className="space-y-4">
+                  {loginError && (
+                    <Alert variant="destructive" className="bg-red-50 border-red-200 text-red-800">
+                      <AlertDescription>{loginError}</AlertDescription>
+                    </Alert>
+                  )}
                   <div className="space-y-2">
                     <Label htmlFor="email">Email</Label>
                     <Input
@@ -132,12 +148,20 @@ const Auth = () => {
                     <p className="mb-1">Demo Login:</p>
                     <p>Email: user@example.com</p>
                     <p>Password: password</p>
+                    <p className="mt-1">Admin Login:</p>
+                    <p>Email: admin@example.com</p>
+                    <p>Password: admin</p>
                   </div>
                 </form>
               </TabsContent>
               
               <TabsContent value="register">
                 <form onSubmit={handleRegister} className="space-y-4">
+                  {registerError && (
+                    <Alert variant="destructive" className="bg-red-50 border-red-200 text-red-800">
+                      <AlertDescription>{registerError}</AlertDescription>
+                    </Alert>
+                  )}
                   <div className="space-y-2">
                     <Label htmlFor="name">Name</Label>
                     <Input
