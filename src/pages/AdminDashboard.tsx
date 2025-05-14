@@ -80,7 +80,7 @@ const AdminDashboard = () => {
     setVoucherDialogOpen(false);
   };
 
-  const handleDeleteVoucher = (voucherId: string) => {
+  const handleDeleteVoucher = (voucherId: number) => {
     if (confirm("Are you sure you want to delete this voucher?")) {
       setVoucherList(voucherList.filter(v => v.id !== voucherId));
       toast.success("Voucher deleted successfully!");
@@ -224,7 +224,7 @@ const AdminDashboard = () => {
                           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                             voucher.isUsed ? "bg-gray-100 text-gray-800" : "bg-green-100 text-green-800"
                           }`}>
-                            {voucher.isUsed ? "Used" : "Active"}
+                            {voucher.isUsed ? "Invalid" : "Active"}
                           </span>
                         </div>
                         <div>

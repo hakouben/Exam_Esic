@@ -30,12 +30,6 @@ const Navbar = () => {
               <Link to="/" className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-hosting-blue">
                 Home
               </Link>
-              <Link to="/shared-hosting" className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-hosting-blue">
-                Shared Hosting
-              </Link>
-              <Link to="/vps" className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-hosting-blue">
-                VPS
-              </Link>
             </div>
           </div>
           <div className="hidden sm:ml-6 sm:flex sm:items-center">

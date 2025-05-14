@@ -11,6 +11,7 @@ import { Link } from "react-router-dom";
 
 const Index = () => {
   const [selectedType, setSelectedType] = useState<"all" | "MUTUALIZED" | "VPS">("all");
+  const [activeTab, setActiveTab] = React.useState("all");
   
   const filteredPlans = selectedType === "all" 
     ? hostingPlans 
@@ -34,12 +35,33 @@ const Index = () => {
               </p>
               <div className="flex flex-wrap gap-4">
                 <Link to="/shared-hosting">
-                  <Button size="lg" variant="secondary" className="font-semibold">
+                  <Button 
+                  size="lg" 
+                  variant="secondary" 
+                  className="font-semibold" 
+                  onClick={() => {
+                      // Update the tab state & scroll down
+                      setSelectedType("MUTUALIZED");
+                      setActiveTab("MUTUALIZED");
+                      document.getElementById('featured-plans')?.scrollIntoView({ 
+                        behavior: 'smooth' 
+                      });
+                    }}>
                     Shared Hosting
                   </Button>
                 </Link>
                 <Link to="/vps">
-                  <Button size="lg" className="bg-white text-hosting-blue hover:bg-gray-100 font-semibold">
+                  <Button
+                  size="lg"
+                  className="bg-white text-hosting-blue hover:bg-gray-100 font-semibold"
+                  onClick={() => {
+                      // Update the tab state & scroll down
+                      setSelectedType("VPS");
+                      setActiveTab("VPS");
+                      document.getElementById('featured-plans')?.scrollIntoView({ 
+                        behavior: 'smooth' 
+                      });
+                    }}>
                     VPS Hosting
                   </Button>
                 </Link>
@@ -57,7 +79,7 @@ const Index = () => {
       </section>
 
       {/* Featured Plans Section */}
-      <section className="py-16 bg-white">
+      <section id="featured-plans" className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold mb-4">Our Hosting Plans</h2>
@@ -66,7 +88,7 @@ const Index = () => {
             </p>
           </div>
           
-          <Tabs defaultValue="all" className="w-full">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <div className="flex justify-center mb-8">
               <TabsList>
                 <TabsTrigger value="all" onClick={() => setSelectedType("all")}>All Plans</TabsTrigger>
@@ -189,7 +211,7 @@ const Index = () => {
                 <Button size="lg" variant="default">Explore Plans</Button>
               </Link>
               <Link to="/auth">
-                <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-hosting-navy">
+                <Button size="lg" variant="outline" className="border-white text-black hover:bg-white hover:text-hosting-navy">
                   Create Account
                 </Button>
               </Link>
