@@ -1,4 +1,3 @@
-
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/layout/Navbar";
@@ -14,7 +13,7 @@ import { Link } from "react-router-dom";
 const Dashboard = () => {
   const navigate = useNavigate();
   const user = getAuthenticatedUser();
-  
+
   useEffect(() => {
     if (!isAuthenticated()) {
       navigate("/auth");
@@ -22,17 +21,21 @@ const Dashboard = () => {
   }, [navigate]);
 
   // Filter orders for the current user
-  const userOrders = orders.filter(order => order.userId === user?.id);
-  
+  const userOrders = orders.filter((order) => order.userId === user?.id);
+
   // Get plans for each order
-  const orderWithPlans = userOrders.map(order => {
-    const plan = hostingPlans.find(plan => plan.id === order.planId);
+  const orderWithPlans = userOrders.map((order) => {
+    const plan = hostingPlans.find((plan) => plan.id === order.planId);
     return { order, plan: plan! };
   });
 
   // Separate active and pending orders
-  const activeOrders = orderWithPlans.filter(({ order }) => order.status === "ACTIVE");
-  const pendingOrders = orderWithPlans.filter(({ order }) => order.status === "PENDING");
+  const activeOrders = orderWithPlans.filter(
+    ({ order }) => order.status === "ACTIVE"
+  );
+  const pendingOrders = orderWithPlans.filter(
+    ({ order }) => order.status === "PENDING"
+  );
 
   if (!user) {
     return null; // Will redirect via useEffect
@@ -41,7 +44,7 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      
+
       <div className="flex-grow bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="mb-8">
@@ -50,7 +53,7 @@ const Dashboard = () => {
               Manage your hosting services and account settings
             </p>
           </div>
-          
+
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl font-semibold">Your Services</h2>
             <Link to="/">
@@ -60,12 +63,13 @@ const Dashboard = () => {
               </Button>
             </Link>
           </div>
-          
+
           {orderWithPlans.length === 0 ? (
             <div className="bg-white rounded-lg shadow p-8 text-center">
               <h3 className="text-lg font-medium mb-2">No services yet</h3>
               <p className="text-gray-500 mb-6">
-                You haven't purchased any hosting services yet. Browse our plans to get started.
+                You haven't purchased any hosting services yet. Browse our plans
+                to get started.
               </p>
               <Link to="/">
                 <Button>View Hosting Plans</Button>
@@ -79,7 +83,7 @@ const Dashboard = () => {
                 <TabsTrigger value="pending">Pending</TabsTrigger>
                 <TabsTrigger value="receipts">Receipts</TabsTrigger>
               </TabsList>
-              
+
               <TabsContent value="all">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {orderWithPlans.map(({ order, plan }) => (
@@ -87,7 +91,7 @@ const Dashboard = () => {
                   ))}
                 </div>
               </TabsContent>
-              
+
               <TabsContent value="active">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {activeOrders.length > 0 ? (
@@ -101,7 +105,7 @@ const Dashboard = () => {
                   )}
                 </div>
               </TabsContent>
-              
+
               <TabsContent value="pending">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {pendingOrders.length > 0 ? (
@@ -110,34 +114,30 @@ const Dashboard = () => {
                     ))
                   ) : (
                     <div className="col-span-2 bg-white rounded-lg shadow p-6 text-center">
-                      <p className="text-gray-500">No pending services found.</p>
+                      <p className="text-gray-500">
+                        No pending services found.
+                      </p>
                     </div>
                   )}
                 </div>
               </TabsContent>
               <TabsContent value="receipts">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {receipts.length > 0 ? (
-                    receipts.map(({ order, plan }) => (
-                      <ServiceCard key={order.id} order={order} plan={plan} />
-                    ))
-                  ) : (
-                    <div className="col-span-2 bg-white rounded-lg shadow p-6 text-center">
-                      <p className="text-gray-500">No existing receipts found.</p>
-                    </div>
-                  )}
+                <div className="col-span-2 bg-white rounded-lg shadow p-6 text-center">
+                  <p className="text-gray-500">No receipts found.</p>
                 </div>
               </TabsContent>
             </Tabs>
           )}
-          
+
           {/* Account Settings Section */}
           <div className="mt-12">
             <h2 className="text-xl font-semibold mb-6">Account Settings</h2>
-            
+
             <div className="bg-white rounded-lg shadow">
               <div className="p-6">
-                <h3 className="text-lg font-medium mb-4">Personal Information</h3>
+                <h3 className="text-lg font-medium mb-4">
+                  Personal Information
+                </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <Label htmlFor="account-name">Name</Label>
@@ -149,12 +149,12 @@ const Dashboard = () => {
                   </div>
                 </div>
               </div>
-              
+
               <div className="border-t border-gray-200 p-6">
-                <h3 className="text-lg font-medium mb-4">Billing Information</h3>
-                <p className="text-gray-500">
-                  No payment methods added yet.
-                </p>
+                <h3 className="text-lg font-medium mb-4">
+                  Billing Information
+                </h3>
+                <p className="text-gray-500">No payment methods added yet.</p>
                 <Button variant="outline" className="mt-2">
                   Add Payment Method
                 </Button>
@@ -163,7 +163,7 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
-      
+
       <Footer />
     </div>
   );
