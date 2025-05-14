@@ -16,7 +16,7 @@ import com.hebergement.hosting_api.repository.VoucherRepository;
 
 @RestController
 @RequestMapping("/admin")
-@PreAuthorize("hasRole('ADMIN')")
+// @PreAuthorize("hasRole('ADMIN')")
 public class AdminController {
 
     private final VoucherRepository voucherRepo;
