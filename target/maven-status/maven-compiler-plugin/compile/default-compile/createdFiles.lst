@@ -1,0 +1,17 @@
+com\hebergement\hosting_api\controller\AuthController$LoginRequest.class
+com\hebergement\hosting_api\controller\AuthController.class
+com\hebergement\hosting_api\model\ServiceOffer.class
+com\hebergement\hosting_api\controller\AdminController.class
+com\hebergement\hosting_api\repository\VoucherRepository.class
+com\hebergement\hosting_api\repository\OrderRepository.class
+com\hebergement\hosting_api\controller\VoucherController.class
+com\hebergement\hosting_api\model\Order.class
+com\hebergement\hosting_api\config\SecurityConfig.class
+com\hebergement\hosting_api\controller\PingController.class
+com\hebergement\hosting_api\repository\UserRepository.class
+com\hebergement\hosting_api\controller\ServiceController.class
+com\hebergement\hosting_api\repository\ServiceOfferRepository.class
+com\hebergement\hosting_api\HostingApiApplication.class
+com\hebergement\hosting_api\model\Voucher.class
+com\hebergement\hosting_api\controller\OrderController.class
+com\hebergement\hosting_api\model\User.class
