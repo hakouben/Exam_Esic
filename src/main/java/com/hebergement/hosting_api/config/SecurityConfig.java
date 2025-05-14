@@ -22,34 +22,47 @@ public class SecurityConfig {
         this.userRepo = userRepo;
     }
 
-    // Définir qui est l'utilisateur (recherche par username)
+    // Permet à Spring de charger un utilisateur par son username
     @Bean
     public UserDetailsService userDetailsService() {
         return username -> userRepo.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
     }
 
-    // Encodeur de mots de passe
+    // Gestion du mot de passe hashé avec BCrypt
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    // Auth manager utilisé par Spring pour le login
+    // Gestion de l'authentification
     @Bean
     public AuthenticationManager authManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
 
-    // Configuration des règles de sécurité (routes publiques / protégées)
+    /*
+     * // Configuration des règles de sécurité désactiver
+     * 
+     * @Bean
+     * public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+     * http
+     * .csrf(csrf -> csrf.disable())
+     * .authorizeHttpRequests(auth -> auth
+     * .anyRequest().permitAll()); // autorise tout
+     * return http.build();
+     * }
+     */
+    // Configuration des règles de sécurité activer
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**", "/services/**", "/ping").permitAll()
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/auth/**", "/services", "/ping").permitAll()
+                        .requestMatchers("/admin/**", "/services/**").hasRole("ADMIN")
                         .anyRequest().authenticated());
         return http.build();
     }
+
 }
