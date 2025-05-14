@@ -208,7 +208,11 @@ const Index = () => {
             </p>
             <div className="flex justify-center gap-4">
               <Link to="/shared-hosting">
-                <Button size="lg" variant="default">Explore Plans</Button>
+                <Button size="lg" variant="default" onClick={() => {
+                      document.getElementById('featured-plans')?.scrollIntoView({ 
+                        behavior: 'smooth' 
+                      });
+                    }}>Explore Plans</Button>
               </Link>
               <Link to="/auth">
                 <Button size="lg" variant="outline" className="border-white text-black hover:bg-white hover:text-hosting-navy">
