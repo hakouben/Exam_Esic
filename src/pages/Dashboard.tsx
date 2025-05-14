@@ -77,6 +77,7 @@ const Dashboard = () => {
                 <TabsTrigger value="all">All Services</TabsTrigger>
                 <TabsTrigger value="active">Active</TabsTrigger>
                 <TabsTrigger value="pending">Pending</TabsTrigger>
+                <TabsTrigger value="receipts">Receipts</TabsTrigger>
               </TabsList>
               
               <TabsContent value="all">
@@ -110,6 +111,19 @@ const Dashboard = () => {
                   ) : (
                     <div className="col-span-2 bg-white rounded-lg shadow p-6 text-center">
                       <p className="text-gray-500">No pending services found.</p>
+                    </div>
+                  )}
+                </div>
+              </TabsContent>
+              <TabsContent value="receipts">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {receipts.length > 0 ? (
+                    receipts.map(({ order, plan }) => (
+                      <ServiceCard key={order.id} order={order} plan={plan} />
+                    ))
+                  ) : (
+                    <div className="col-span-2 bg-white rounded-lg shadow p-6 text-center">
+                      <p className="text-gray-500">No existing receipts found.</p>
                     </div>
                   )}
                 </div>
