@@ -12,6 +12,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.hebergement.hosting_api.model.User;
 import com.hebergement.hosting_api.repository.UserRepository;
+import java.util.Map;
+import java.util.HashMap;
+
 
 @RestController
 @RequestMapping("/auth")
@@ -24,14 +27,31 @@ public class AuthController {
     private PasswordEncoder passwordEncoder;
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest req) {
-        Optional<User> existingOpt = userRepository.findByUsername(req.username);
-        if (existingOpt.isPresent() && passwordEncoder.matches(req.password, existingOpt.get().getPassword())) {
-            return ResponseEntity.ok("FakeTokenJWT-" + existingOpt.get().getUsername());
-        } else {
-            return ResponseEntity.status(401).body("Invalid credentials");
-        }
+public ResponseEntity<?> login(@RequestBody LoginRequest req) {
+    Optional<User> existingOpt = userRepository.findByUsername(req.username);
+
+    if (existingOpt.isPresent() && passwordEncoder.matches(req.password, existingOpt.get().getPassword())) {
+        User user = existingOpt.get();
+
+        // Crée un token fake ici (à remplacer par JWT plus tard)
+        String token = "FakeJWTToken-" + user.getUsername();
+
+        // Créer une réponse manuellement sans exposer le mot de passe
+        Map<String, Object> response = new HashMap<>();
+        response.put("token", token);
+
+        Map<String, Object> userInfo = new HashMap<>();
+        userInfo.put("id", user.getId());
+        userInfo.put("username", user.getUsername());
+        userInfo.put("role", user.getRole());
+
+        response.put("user", userInfo);
+
+        return ResponseEntity.ok(response);
+    } else {
+        return ResponseEntity.status(401).body("Invalid credentials");
     }
+}
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody User user) {

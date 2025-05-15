@@ -134,7 +134,7 @@ public class Order {
     private String ip;
     private boolean active;
     private LocalDate date;
-
+    
     @ManyToOne
     private Voucher voucher;
 
