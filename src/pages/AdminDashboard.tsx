@@ -67,7 +67,7 @@ const AdminDashboard = () => {
     setPlanDialogOpen(true);
   };
 
-  const handleCreateVoucher = (code: string, discount: number) => {
+  const handleCreateVoucher = (code: string, discount: number, expiresAt: string) => {
     const newVoucher = {
       id: `voucher-${Date.now()}`,
       code,
