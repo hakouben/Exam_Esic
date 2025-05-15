@@ -127,14 +127,18 @@ export const hostingPlans: HostingPlan[] = [
 // Mock Vouchers
 export const vouchers: Voucher[] = [
   {
+    id: "1",
     code: "WELCOME10",
     discount: 10,
-    isUsed: false
+    isUsed: false,
+    expiresAt: "2026-06-15T10:30:00Z"
   },
   {
+    id: "2",
     code: "SUMMER20",
     discount: 20,
-    isUsed: false
+    isUsed: false,
+    expiresAt: "2026-06-15T10:30:00Z",
   }
 ];
 

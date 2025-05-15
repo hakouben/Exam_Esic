@@ -13,7 +13,7 @@ import { isAuthenticated, isAdmin } from "@/lib/authUtils";
 import { hostingPlans, vouchers, orders } from "@/lib/data";
 import { toast } from "sonner";
 import { HostingPlan } from "@/lib/types";
-import { Plus, Edit, Trash2 } from "lucide-react";
+import { Plus, Edit, Trash2, CircleOff } from "lucide-react";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -67,12 +67,13 @@ const AdminDashboard = () => {
     setPlanDialogOpen(true);
   };
 
-  const handleCreateVoucher = (code: string, discount: number) => {
+  const handleCreateVoucher = (code: string, discount: number, expiresAt: string) => {
     const newVoucher = {
       id: `voucher-${Date.now()}`,
       code,
       discount,
-      isUsed: false
+      isUsed: false,
+      expiresAt
     };
     
     setVoucherList([...voucherList, newVoucher]);
@@ -80,11 +81,17 @@ const AdminDashboard = () => {
     setVoucherDialogOpen(false);
   };
 
-  const handleDeleteVoucher = (voucherId: string) => {
+  const handleDeleteVoucher = (voucherId: number) => {
     if (confirm("Are you sure you want to delete this voucher?")) {
       setVoucherList(voucherList.filter(v => v.id !== voucherId));
       toast.success("Voucher deleted successfully!");
     }
+  };
+  const updateVoucherStatus = (voucherId: number) => {
+    setVoucherList(voucherList.map(v => 
+      v.id === voucherId ? { ...v, isUsed: !v.isUsed } : v
+    ));
+    toast.success(`Voucher marked as ${voucherList.find(v => v.id === voucherId)?.isUsed ? "Active" : "Invalid"}!`);
   };
 
   if (!isAuthenticated() || !isAdmin()) {
@@ -210,27 +217,39 @@ const AdminDashboard = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="border rounded-md divide-y">
-                    <div className="grid grid-cols-4 gap-4 px-4 py-3 font-medium bg-gray-50">
+                    <div className="grid grid-cols-5 gap-4 px-4 py-3 font-medium bg-gray-50">
                       <div>Code</div>
                       <div>Discount (%)</div>
                       <div>Status</div>
                       <div>Actions</div>
+                      <div>Expiry Date</div>
                     </div>
                     {voucherList.map((voucher, index) => (
-                      <div key={index} className="grid grid-cols-4 gap-4 px-4 py-3">
+                      <div key={index} className="grid grid-cols-5 gap-4 px-4 py-3 items-center">
                         <div className="font-mono">{voucher.code}</div>
                         <div>{voucher.discount}%</div>
-                        <div>
+                        <div className="flex items-center gap-2">
                           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                             voucher.isUsed ? "bg-gray-100 text-gray-800" : "bg-green-100 text-green-800"
                           }`}>
-                            {voucher.isUsed ? "Used" : "Active"}
+                            {voucher.isUsed ? "Invalid" : "Active"}
                           </span>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="h-8" 
+                            onClick={() => updateVoucherStatus(voucher.id)}
+                          >
+                            <CircleOff className="h-4 w-4" />
+                          </Button>
                         </div>
                         <div>
                           <Button variant="outline" size="sm" className="h-8" onClick={() => handleDeleteVoucher(voucher.id)}>
                             <Trash2 className="h-4 w-4" />
                           </Button>
+                        </div>
+                        <div className="text-sm text-gray-600">
+                          {voucher.expiresAt ? new Date(voucher.expiresAt).toLocaleDateString() : 'No expiry'}
                         </div>
                       </div>
                     ))}

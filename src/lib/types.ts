@@ -20,9 +20,11 @@ export interface HostingPlan {
 }
 
 export interface Voucher {
+  id: string;
   code: string;
   discount: number;
   isUsed: boolean;
+  expiresAt: string;
 }
 
 export interface Order {
