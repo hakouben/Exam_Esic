@@ -3,11 +3,14 @@ package com.hebergement.hosting_api.model;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.GenerationType;
+
+
 
 @Entity
 public class ServiceOffer {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // Ajouté
     private Long id;
     private String name;
     private String type; // MUTUALISE, VPS_STD, VPS_PERF
