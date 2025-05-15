@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/layout/Navbar";
@@ -7,13 +6,19 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import PlanForm from "@/components/admin/PlanForm";
 import VoucherForm from "@/components/admin/VoucherForm";
 import { isAuthenticated, isAdmin } from "@/lib/authUtils";
-import { hostingPlans, vouchers, orders } from "@/lib/data";
-import { toast } from "sonner";
+import { hostingPlans, vouchers, orders, createAdmin } from "@/lib/data";
+import { toast } from "@/components/ui/use-toast";
 import { HostingPlan } from "@/lib/types";
-import { Plus, Edit, Trash2, CircleOff } from "lucide-react";
+import { Plus, Edit, Trash2, CircleOff, ShieldPlus } from "lucide-react";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -21,14 +26,55 @@ const AdminDashboard = () => {
   const [voucherList, setVoucherList] = useState(vouchers);
   const [planDialogOpen, setPlanDialogOpen] = useState(false);
   const [voucherDialogOpen, setVoucherDialogOpen] = useState(false);
+  const [createAdminDialogOpen, setCreateAdminDialogOpen] = useState(false);
   const [editingPlan, setEditingPlan] = useState<HostingPlan | undefined>(undefined);
   
   useEffect(() => {
     if (!isAuthenticated() || !isAdmin()) {
-      toast.error("You don't have permission to access this page");
+      toast({
+        title: "Access Denied",
+        description: "You don't have permission to access this page",
+        variant: "destructive"
+      });
       navigate("/");
     }
   }, [navigate]);
+
+  // Admin creation form schema
+  const adminFormSchema = z.object({
+    name: z.string().min(2, { message: "Name must be at least 2 characters." }),
+    email: z.string().email({ message: "Please enter a valid email address." }),
+    password: z.string().min(8, { message: "Password must be at least 8 characters." })
+  });
+
+  type AdminFormValues = z.infer<typeof adminFormSchema>;
+
+  const adminForm = useForm<AdminFormValues>({
+    resolver: zodResolver(adminFormSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      password: ""
+    }
+  });
+
+  const handleCreateAdmin = (values: AdminFormValues) => {
+    try {
+      const newAdmin = createAdmin(values.name, values.email, values.password);
+      toast({
+        title: "Admin Created",
+        description: `${newAdmin.name} has been added as an admin.`
+      });
+      setCreateAdminDialogOpen(false);
+      adminForm.reset();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to create admin. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
 
   const handleCreatePlan = (plan: Omit<HostingPlan, "id">) => {
     const newPlan: HostingPlan = {
@@ -104,11 +150,68 @@ const AdminDashboard = () => {
       
       <div className="flex-grow bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="mb-8">
+          <div className="mb-8 flex justify-between items-center">
             <h1 className="text-2xl font-bold">Admin Dashboard</h1>
-            <p className="text-gray-600">
-              Manage hosting plans, vouchers, and view orders
-            </p>
+
+            <Dialog open={createAdminDialogOpen} onOpenChange={setCreateAdminDialogOpen}>
+              <DialogTrigger asChild>
+                <Button>
+                  <ShieldPlus className="mr-2 h-4 w-4" />
+                  Create New Admin
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[500px]">
+                <DialogHeader>
+                  <DialogTitle>Create New Admin User</DialogTitle>
+                </DialogHeader>
+                <Form {...adminForm}>
+                  <form onSubmit={adminForm.handleSubmit(handleCreateAdmin)} className="space-y-4 pt-4">
+                    <FormField
+                      control={adminForm.control}
+                      name="name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Name</FormLabel>
+                          <FormControl>
+                            <Input placeholder="John Doe" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={adminForm.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Email</FormLabel>
+                          <FormControl>
+                            <Input placeholder="admin@example.com" type="email" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={adminForm.control}
+                      name="password"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Password</FormLabel>
+                          <FormControl>
+                            <Input placeholder="••••••••" type="password" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <div className="flex justify-end pt-2">
+                      <Button type="submit">Create Admin</Button>
+                    </div>
+                  </form>
+                </Form>
+              </DialogContent>
+            </Dialog>
           </div>
           
           <Tabs defaultValue="plans">

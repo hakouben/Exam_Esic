@@ -1,4 +1,3 @@
-
 import { HostingPlan, User, Order, Voucher } from "./types";
 
 // Mock Hosting Plans
@@ -183,6 +182,26 @@ export const orders: Order[] = [
   }
 ];
 
+// Pending admin requests type
+export interface PendingAdminRequest {
+  id: string;
+  email: string;
+  name: string;
+  requestedAt: string;
+  verificationToken: string;
+}
+
+// Mock Pending Admin Requests
+export const pendingAdminRequests: PendingAdminRequest[] = [
+  {
+    id: "pending-1",
+    email: "pending@example.com",
+    name: "Pending User",
+    requestedAt: "2023-04-15T10:30:00Z",
+    verificationToken: "token-123"
+  }
+];
+
 // Authentication utility functions
 export const mockLogin = (email: string, password: string): User | null => {
   // This is just a mock implementation
@@ -228,4 +247,19 @@ export const mockCreateOrder = (userId: string, planId: string, voucherId?: stri
   }
   
   return newOrder;
+};
+
+// Admin creation function
+export const createAdmin = (name: string, email: string, password: string): User => {
+  const newAdmin: User = {
+    id: `admin-${Math.floor(Math.random() * 1000)}`,
+    email,
+    name,
+    role: "ADMIN"
+  };
+  
+  // this should all save to a database
+  console.log("New admin created:", newAdmin);
+  
+  return newAdmin;
 };
