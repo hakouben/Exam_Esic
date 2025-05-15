@@ -118,7 +118,7 @@ const AdminDashboard = () => {
       id: `voucher-${Date.now()}`,
       code,
       discount,
-      isUsed: false,
+      status: true,
       expiresAt
     };
     
@@ -135,9 +135,9 @@ const AdminDashboard = () => {
   };
   const updateVoucherStatus = (voucherId: number) => {
     setVoucherList(voucherList.map(v => 
-      v.id === voucherId ? { ...v, isUsed: !v.isUsed } : v
+      v.id === voucherId ? { ...v, status: !v.status } : v
     ));
-    toast.success(`Voucher marked as ${voucherList.find(v => v.id === voucherId)?.isUsed ? "Active" : "Invalid"}!`);
+    toast.success(`Voucher marked as ${voucherList.find(v => v.id === voucherId)?.status ? "Invalid" : "Active"}!`);
   };
 
   if (!isAuthenticated() || !isAdmin()) {
@@ -333,9 +333,9 @@ const AdminDashboard = () => {
                         <div>{voucher.discount}%</div>
                         <div className="flex items-center gap-2">
                           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                            voucher.isUsed ? "bg-gray-100 text-gray-800" : "bg-green-100 text-green-800"
+                            voucher.status ? "bg-gray-100 text-gray-800" : "bg-green-100 text-green-800"
                           }`}>
-                            {voucher.isUsed ? "Invalid" : "Active"}
+                            {voucher.status ? "Invalid" : "Active"}
                           </span>
                           <Button 
                             variant="outline" 

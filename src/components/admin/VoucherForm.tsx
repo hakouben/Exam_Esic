@@ -7,15 +7,17 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface VoucherFormProps {
-  onSubmit: (code: string, discount: number, expiresAt: Date) => void;
+  onSubmit: (code: string, discount: number, expiresAt: Date, isActive: boolean) => void;
 }
 
 const VoucherForm: React.FC<VoucherFormProps> = ({ onSubmit }) => {
   const [code, setCode] = useState("");
   const [discount, setDiscount] = useState<number>(10);
   const [expiresAt, setExpiresAt] = useState<Date | undefined>(new Date());
+  const [isActive, setIsActive] = useState<boolean>(true);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,10 +37,11 @@ const VoucherForm: React.FC<VoucherFormProps> = ({ onSubmit }) => {
       return;
     }
     
-    onSubmit(code, discount, expiresAt);
+    onSubmit(code, discount, expiresAt, isActive);
     setCode("");
     setDiscount(10);
     setExpiresAt(new Date());
+    setIsActive(true);
   };
 
   return (
@@ -87,6 +90,15 @@ const VoucherForm: React.FC<VoucherFormProps> = ({ onSubmit }) => {
             />
           </PopoverContent>
         </Popover>
+      </div>
+
+      <div className="flex items-center space-x-2">
+        <Checkbox 
+          id="active-status" 
+          checked={isActive} 
+          onCheckedChange={(checked) => setIsActive(checked as boolean)}
+        />
+        <Label htmlFor="active-status">Active Voucher</Label>
       </div>
       
       <div className="flex justify-end">

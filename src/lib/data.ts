@@ -130,7 +130,8 @@ export const vouchers: Voucher[] = [
     code: "WELCOME10",
     discount: 10,
     isUsed: false,
-    expiresAt: "2026-06-15T10:30:00Z"
+    expiresAt: "2026-06-15T10:30:00Z",
+    status: true
   },
   {
     id: "2",
@@ -138,6 +139,7 @@ export const vouchers: Voucher[] = [
     discount: 20,
     isUsed: false,
     expiresAt: "2026-06-15T10:30:00Z",
+    status: true
   }
 ];
 

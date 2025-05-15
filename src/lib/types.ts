@@ -25,6 +25,7 @@ export interface Voucher {
   discount: number;
   isUsed: boolean;
   expiresAt: string;
+  status: boolean;
 }
 
 export interface Order {
