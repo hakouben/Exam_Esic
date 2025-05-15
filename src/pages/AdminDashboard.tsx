@@ -333,9 +333,9 @@ const AdminDashboard = () => {
                         <div>{voucher.discount}%</div>
                         <div className="flex items-center gap-2">
                           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                            voucher.status ? "bg-gray-100 text-gray-800" : "bg-green-100 text-green-800"
+                            voucher.status ? "bg-green-100 text-green-800": "bg-gray-100 text-gray-800"
                           }`}>
-                            {voucher.status ? "Invalid" : "Active"}
+                            {voucher.status ? "Active" : "Invalid"}
                           </span>
                           <Button 
                             variant="outline" 
