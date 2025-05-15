@@ -9,6 +9,9 @@ import { isAuthenticated, getAuthenticatedUser } from "@/lib/authUtils";
 import { hostingPlans, orders } from "@/lib/data";
 import { PlusCircle } from "lucide-react";
 import { Link } from "react-router-dom";
+// Import at the top of the file
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -38,13 +41,13 @@ const Dashboard = () => {
   );
 
   if (!user) {
+    console.log("user", user);
     return null; // Will redirect via useEffect
   }
 
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-
       <div className="flex-grow bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="mb-8">
@@ -54,7 +57,7 @@ const Dashboard = () => {
             </p>
           </div>
 
-          <div className="flex justify-between items-center mb-6">
+          {/* <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl font-semibold">Your Services</h2>
             <Link to="/">
               <Button>
@@ -62,7 +65,7 @@ const Dashboard = () => {
                 Add New Service
               </Button>
             </Link>
-          </div>
+          </div> */}
 
           {orderWithPlans.length === 0 ? (
             <div className="bg-white rounded-lg shadow p-8 text-center">
@@ -168,9 +171,5 @@ const Dashboard = () => {
     </div>
   );
 };
-
-// Import at the top of the file
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 
 export default Dashboard;

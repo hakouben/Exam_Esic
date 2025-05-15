@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -11,7 +10,11 @@ interface PricingCardProps {
 
 const PricingCard: React.FC<PricingCardProps> = ({ plan }) => {
   return (
-    <div className={`relative rounded-lg border bg-card text-card-foreground shadow-sm ${plan.popular ? "border-hosting-blue" : ""}`}>
+    <div
+      className={`relative rounded-lg border bg-card text-card-foreground shadow-sm ${
+        plan.popular ? "border-hosting-blue" : ""
+      }`}
+    >
       {plan.popular && (
         <div className="absolute -top-3 inset-x-0 flex justify-center">
           <span className="inline-block bg-hosting-blue text-white text-xs font-semibold px-3 py-1 rounded-full">
@@ -23,7 +26,9 @@ const PricingCard: React.FC<PricingCardProps> = ({ plan }) => {
         <h3 className="text-xl font-bold">{plan.name}</h3>
         <div className="mt-4 flex items-baseline">
           <span className="text-3xl font-extrabold">${plan.price}</span>
-          <span className="ml-1 text-sm font-medium text-muted-foreground">/mo</span>
+          <span className="ml-1 text-sm font-medium text-muted-foreground">
+            /mo
+          </span>
         </div>
         <ul className="mt-6 space-y-2">
           {plan.features.map((feature, index) => (
@@ -37,7 +42,10 @@ const PricingCard: React.FC<PricingCardProps> = ({ plan }) => {
       <div className="bg-muted/60 px-6 py-4">
         <div className="flex flex-col space-y-2">
           <Link to={`/order/${plan.id}`}>
-            <Button className="w-full" variant={plan.popular ? "default" : "outline"}>
+            <Button
+              className="w-full"
+              variant={plan.popular ? "default" : "outline"}
+            >
               Order Now
             </Button>
           </Link>

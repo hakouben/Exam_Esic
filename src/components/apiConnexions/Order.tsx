@@ -9,7 +9,7 @@ const OrderForm = () => {
     active: true,
     date: new Date().toISOString().split("T")[0], // format YYYY-MM-DD
     service: { id: 4 }, // Exemple : VPS S1
-    voucher: { code: "houssem32" }, // facultatif
+    // voucher: { code: "houssem32" }, // facultatif
   });
 
   const [msg, setMsg] = useState("");
@@ -76,14 +76,14 @@ const OrderForm = () => {
           }))
         }
       />
-      <input
+      {/* <input
         name="voucher.code"
         placeholder="Code bon (facultatif)"
         value={order.voucher.code}
         onChange={(e) =>
           setOrder((prev) => ({ ...prev, voucher: { code: e.target.value } }))
         }
-      />
+      /> */}
 
       <button type="submit">Passer la commande</button>
       {msg && <p>{msg}</p>}

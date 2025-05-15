@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,8 +8,11 @@ interface VoucherInputProps {
   onApply: (discount: number) => void;
 }
 
-const VoucherInput: React.FC<VoucherInputProps> = ({ onApply }) => {
-  const [voucherCode, setVoucherCode] = useState("");
+const VoucherInput: React.FC<VoucherInputProps> = ({
+  onApply,
+  voucherCode,
+  setVoucherCode,
+}) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isApplied, setIsApplied] = useState(false);
 
@@ -21,11 +23,11 @@ const VoucherInput: React.FC<VoucherInputProps> = ({ onApply }) => {
     }
 
     setIsLoading(true);
-    
+
     // Simulate API call with delay
     setTimeout(() => {
       const voucher = mockValidateVoucher(voucherCode);
-      
+
       if (voucher) {
         toast.success(`Voucher applied! ${voucher.discount}% discount`);
         onApply(voucher.discount);
@@ -33,7 +35,7 @@ const VoucherInput: React.FC<VoucherInputProps> = ({ onApply }) => {
       } else {
         toast.error("Invalid or expired voucher code");
       }
-      
+
       setIsLoading(false);
     }, 1000);
   };
@@ -52,7 +54,7 @@ const VoucherInput: React.FC<VoucherInputProps> = ({ onApply }) => {
           disabled={isLoading || isApplied}
         />
         <Button
-          onClick={handleValidateVoucher}
+          onClick={onApply}
           disabled={isLoading || isApplied}
           variant={isApplied ? "outline" : "default"}
         >

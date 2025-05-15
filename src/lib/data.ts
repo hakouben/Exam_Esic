@@ -1,10 +1,9 @@
-
 import { HostingPlan, User, Order, Voucher } from "./types";
 
 // Mock Hosting Plans
 export const hostingPlans: HostingPlan[] = [
   {
-    id: "1",
+    id: "9",
     name: "Starter Shared Hosting",
     type: "MUTUALIZED",
     cpuCores: 1,
@@ -18,8 +17,8 @@ export const hostingPlans: HostingPlan[] = [
       "10 GB SSD Storage",
       "1 Email Account",
       "Limited Bandwidth",
-      "Basic Support"
-    ]
+      "Basic Support",
+    ],
   },
   {
     id: "2",
@@ -37,9 +36,9 @@ export const hostingPlans: HostingPlan[] = [
       "5 Email Accounts",
       "Unlimited Bandwidth",
       "Priority Support",
-      "Free Domain"
+      "Free Domain",
     ],
-    popular: true
+    popular: true,
   },
   {
     id: "3",
@@ -58,8 +57,8 @@ export const hostingPlans: HostingPlan[] = [
       "Unlimited Bandwidth",
       "Premium Support",
       "Free Domain",
-      "Free CDN"
-    ]
+      "Free CDN",
+    ],
   },
   {
     id: "4",
@@ -77,8 +76,8 @@ export const hostingPlans: HostingPlan[] = [
       "1 TB Bandwidth",
       "Full Root Access",
       "Basic Support",
-      "99.9% Uptime"
-    ]
+      "99.9% Uptime",
+    ],
   },
   {
     id: "5",
@@ -97,9 +96,9 @@ export const hostingPlans: HostingPlan[] = [
       "Full Root Access",
       "Priority Support",
       "99.9% Uptime",
-      "Weekly Backups"
+      "Weekly Backups",
     ],
-    popular: true
+    popular: true,
   },
   {
     id: "6",
@@ -119,9 +118,9 @@ export const hostingPlans: HostingPlan[] = [
       "Premium Support",
       "99.9% Uptime",
       "Daily Backups",
-      "DDoS Protection"
-    ]
-  }
+      "DDoS Protection",
+    ],
+  },
 ];
 
 // Mock Vouchers
@@ -131,7 +130,7 @@ export const vouchers: Voucher[] = [
     code: "WELCOME10",
     discount: 10,
     isUsed: false,
-    expiresAt: "2026-06-15T10:30:00Z"
+    expiresAt: "2026-06-15T10:30:00Z",
   },
   {
     id: "2",
@@ -139,7 +138,7 @@ export const vouchers: Voucher[] = [
     discount: 20,
     isUsed: false,
     expiresAt: "2026-06-15T10:30:00Z",
-  }
+  },
 ];
 
 // Mock User
@@ -147,7 +146,7 @@ export const currentUser: User = {
   id: "1",
   email: "user@example.com",
   name: "John Doe",
-  role: "CUSTOMER"
+  role: "CUSTOMER",
 };
 
 // Mock Admin
@@ -155,7 +154,7 @@ export const adminUser: User = {
   id: "2",
   email: "admin@example.com",
   name: "Admin User",
-  role: "ADMIN"
+  role: "ADMIN",
 };
 
 // Mock Orders
@@ -170,8 +169,8 @@ export const orders: Order[] = [
     sshCredentials: {
       host: "vps123.hostservice.com",
       username: "user123",
-      password: "securePassword123"
-    }
+      password: "securePassword123",
+    },
   },
   {
     id: "2",
@@ -179,8 +178,8 @@ export const orders: Order[] = [
     planId: "2",
     voucherId: "1",
     createdAt: "2023-05-20T14:15:00Z",
-    status: "ACTIVE"
-  }
+    status: "ACTIVE",
+  },
 ];
 
 // Authentication utility functions
@@ -196,36 +195,42 @@ export const mockLogin = (email: string, password: string): User | null => {
 };
 
 export const mockValidateVoucher = (code: string): Voucher | null => {
-  const voucher = vouchers.find(v => v.code === code && !v.isUsed);
+  const voucher = vouchers.find((v) => v.code === code && !v.isUsed);
   return voucher || null;
 };
 
-export const mockCreateOrder = (userId: string, planId: string, voucherId?: string): Order => {
+export const mockCreateOrder = (
+  userId: string,
+  planId: string,
+  voucherId?: string
+): Order => {
   const newOrder: Order = {
     id: `order-${Math.floor(Math.random() * 1000)}`,
     userId,
     planId,
     voucherId,
     createdAt: new Date().toISOString(),
-    status: "PENDING"
+    status: "PENDING",
   };
-  
+
   // If it's a VPS, add SSH credentials after a delay (simulating provisioning)
-  const plan = hostingPlans.find(p => p.id === planId);
+  const plan = hostingPlans.find((p) => p.id === planId);
   if (plan?.type === "VPS") {
     setTimeout(() => {
       newOrder.status = "ACTIVE";
-      newOrder.ipAddress = `185.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`;
+      newOrder.ipAddress = `185.${Math.floor(Math.random() * 255)}.${Math.floor(
+        Math.random() * 255
+      )}.${Math.floor(Math.random() * 255)}`;
       newOrder.sshCredentials = {
         host: `vps${Math.floor(Math.random() * 1000)}.hostservice.com`,
         username: `user${Math.floor(Math.random() * 1000)}`,
-        password: `securePassword${Math.floor(Math.random() * 1000)}`
+        password: `securePassword${Math.floor(Math.random() * 1000)}`,
       };
     }, 2000);
   } else {
     // For shared hosting, activate immediately
     newOrder.status = "ACTIVE";
   }
-  
+
   return newOrder;
 };
