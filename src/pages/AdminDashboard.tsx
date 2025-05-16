@@ -113,27 +113,26 @@ const AdminDashboard = () => {
     setPlanDialogOpen(true);
   };
 
-  const handleCreateVoucher = (code: string, discount: number, expiresAt: string) => {
-    const newVoucher = {
-      id: `voucher-${Date.now()}`,
-      code,
-      discount,
-      status: true,
-      expiresAt
-    };
-    
-    setVoucherList([...voucherList, newVoucher]);
-    toast.success("Voucher created successfully!");
-    setVoucherDialogOpen(false);
+const handleCreateVoucher = (code: string, discount: number, expiresAt: Date, isActive: boolean) => {
+  const newVoucher = {
+    id: `voucher-${Date.now()}`,
+    code,
+    discount,
+    status: isActive, // Use the isActive parameter directly
+    expiresAt: expiresAt.toISOString() // Convert Date to string
   };
-
-  const handleDeleteVoucher = (voucherId: number) => {
+  
+  setVoucherList([...voucherList, newVoucher]);
+  toast.success("Voucher created successfully!");
+  setVoucherDialogOpen(false); // This will close the dialog
+};
+  const handleDeleteVoucher = (voucherId: string) => {
     if (confirm("Are you sure you want to delete this voucher?")) {
       setVoucherList(voucherList.filter(v => v.id !== voucherId));
       toast.success("Voucher deleted successfully!");
     }
   };
-  const updateVoucherStatus = (voucherId: number) => {
+  const updateVoucherStatus = (voucherId: string) => {
     setVoucherList(voucherList.map(v => 
       v.id === voucherId ? { ...v, status: !v.status } : v
     ));
@@ -313,7 +312,7 @@ const AdminDashboard = () => {
                         <DialogHeader>
                           <DialogTitle>Create New Voucher</DialogTitle>
                         </DialogHeader>
-                        <VoucherForm onSubmit={handleCreateVoucher} />
+                        <VoucherForm onSubmit={handleCreateVoucher} onClose={() => setVoucherDialogOpen(false)} />
                       </DialogContent>
                     </Dialog>
                   </div>

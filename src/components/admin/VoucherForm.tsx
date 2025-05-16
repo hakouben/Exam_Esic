@@ -11,13 +11,14 @@ import { Checkbox } from "@/components/ui/checkbox";
 
 interface VoucherFormProps {
   onSubmit: (code: string, discount: number, expiresAt: Date, isActive: boolean) => void;
+  onClose?: () => void;
 }
 
-const VoucherForm: React.FC<VoucherFormProps> = ({ onSubmit }) => {
+const VoucherForm: React.FC<VoucherFormProps> = ({ onSubmit, onClose }) => {
   const [code, setCode] = useState("");
   const [discount, setDiscount] = useState<number>(10);
-  const [expiresAt, setExpiresAt] = useState<Date | undefined>(new Date());
-  const [isActive, setIsActive] = useState<boolean>(true);
+  const [expiresAt, setExpiresAt] = useState<Date>(new Date());
+  const [isActive, setIsActive] = useState(true);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,17 +33,18 @@ const VoucherForm: React.FC<VoucherFormProps> = ({ onSubmit }) => {
       return;
     }
 
-    if (!expiresAt) {
-      toast.error("Please select an expiry date");
-      return;
-    }
-    
     onSubmit(code, discount, expiresAt, isActive);
+    
+    // Reset form
     setCode("");
     setDiscount(10);
     setExpiresAt(new Date());
     setIsActive(true);
+    
+    // Close the form
+    if (onClose) onClose();
   };
+
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
