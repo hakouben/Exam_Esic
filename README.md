@@ -1,4 +1,3 @@
-
 # HostPro - Web Hosting Platform
 
 HostPro is a comprehensive web hosting platform that allows users to browse hosting plans, place orders, and manage their services. It features user authentication, admin functionality, and a voucher system for discounts.
@@ -100,6 +99,10 @@ HostPro is a comprehensive web hosting platform that allows users to browse host
 - **data (`src/lib/data.ts`)**
   - Mock data for hosting plans, users, vouchers, and orders
   - Used for demonstration purposes
+
+## Backend
+
+This project also includes a backend component responsible for handling data persistence, authentication, and business logic related to hosting plans, users, orders, and vouchers.
 
 ## Workflows
 
