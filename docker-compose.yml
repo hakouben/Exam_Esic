@@ -1,10 +1,41 @@
 version: "3.9"
 
 services:
+  mysql:
+    image: mysql:5.7
+    container_name: mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: hosting_platform
+      MYSQL_USER: esicuser
+      MYSQL_PASSWORD: esicpass
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    restart: always
+    ports:
+      - "8083:80"
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+    depends_on:
+      - mysql
+
   backend:
     build: ./backend
     ports:
       - "8080:8080"
+    depends_on:
+      - mysql
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/exam_esic
+      SPRING_DATASOURCE_USERNAME: esicuser
+      SPRING_DATASOURCE_PASSWORD: esicpass
 
   frontend:
     build: ./frontend
@@ -12,3 +43,6 @@ services:
       - "3000:3000"
     depends_on:
       - backend
+
+volumes:
+  mysql_data:
