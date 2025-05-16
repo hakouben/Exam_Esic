@@ -339,6 +339,8 @@ const OrderPage = () => {
     null
   );
 
+  const [apiResponse, setApiResponse] = useState([]);
+
   const user = getAuthenticatedUser();
 
   console.log("user auth", user);
@@ -405,7 +407,8 @@ const OrderPage = () => {
       setOrderComplete(true);
       toast.success("Order placed successfully!");
       const data = await res.json();
-      generateInvoicePDF(data);
+      setApiResponse(data);
+      // generateInvoicePDF(data);
     } catch (err: any) {
       console.log("data error", err);
       toast.error("Order failed: " + err.message);
@@ -525,9 +528,18 @@ const OrderPage = () => {
                   Thank you for choosing HostPro! You can view and manage your
                   services in your dashboard.
                 </p>
-                <Link to="/dashboard">
-                  <Button>Go to Dashboard</Button>
-                </Link>
+
+                <div className="flex flex-col items-center gap-4">
+                  <Link to="/dashboard">
+                    <Button>Go to Dashboard</Button>
+                  </Link>
+                  <Button
+                    variant="outline"
+                    onClick={() => generateInvoicePDF(apiResponse)}
+                  >
+                    Print Invoice
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           ) : (

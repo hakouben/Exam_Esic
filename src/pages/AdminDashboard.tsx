@@ -424,6 +424,21 @@ const AdminDashboard = () => {
     }
   };
 
+  const [orders, setOrders] = useState([]);
+
+  useEffect(() => {
+    const fetchMyOrders = async () => {
+      try {
+        const response = await axios.get("http://localhost:8082/order/my");
+        setOrders(response.data);
+      } catch (error) {
+        console.error("Erreur lors du chargement des commandes :", error);
+      }
+    };
+
+    fetchMyOrders();
+  }, []); // [] = appel uniquement au chargement
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -506,7 +521,7 @@ const AdminDashboard = () => {
       )}
 
       <div className="flex-grow bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-10xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <h1 className="text-2xl font-bold mb-2">Admin Dashboard</h1>
           <p className="text-gray-600 mb-8">
             Manage hosting plans, vouchers, and orders
@@ -653,6 +668,7 @@ const AdminDashboard = () => {
                       <div>Discount</div>
                       <div>USED</div>
                       <div>SERVICE</div>
+                      <div>Expiry Date</div>
                       <div>Actions</div>
                     </div>
                     {voucherListFromApi?.map((v, i) => (
@@ -690,7 +706,7 @@ const AdminDashboard = () => {
             </TabsContent>
 
             {/* === ORDERS === */}
-            <TabsContent value="orders">
+            {/* <TabsContent value="orders">
               <Card>
                 <CardHeader>
                   <CardTitle>Recent Orders</CardTitle>
@@ -713,6 +729,42 @@ const AdminDashboard = () => {
                         </div>
                         <div>{new Date(o.createdAt).toLocaleDateString()}</div>
                         <div>{o.status}</div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent> */}
+            <TabsContent value="orders">
+              <Card>
+                <CardHeader>
+                  <CardTitle>All Order Details</CardTitle>
+                </CardHeader>
+                <CardContent className="overflow-x-auto">
+                  <div className="min-w-[1000px] border rounded-md divide-y">
+                    <div className="grid grid-cols-6 gap-4 px-4 py-3 font-medium bg-gray-50 text-sm">
+                      <div>ID</div>
+                      <div>User</div>
+                      <div>Plan</div>
+                      <div>CPU / RAM / SSD</div>
+                      <div>Price</div>
+                      <div>Voucher</div>
+                    </div>
+
+                    {orders.map((o, i) => (
+                      <div
+                        key={i}
+                        className="grid grid-cols-6 gap-4 px-4 py-3 text-sm"
+                      >
+                        <div>{o.id}</div>
+                        <div>{o.user?.username || "Unknown"}</div>
+                        <div>{o.service?.name || "N/A"}</div>
+                        <div>
+                          {o.service?.cpuCores}C / {o.service?.ramGb}GB /{" "}
+                          {o.service?.ssdStorageGb}GB
+                        </div>
+                        <div>${o.service?.price}</div>
+                        <div>{o.voucher?.code || "—"}</div>
                       </div>
                     ))}
                   </div>
