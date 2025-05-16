@@ -45,5 +45,5 @@ public class AdminController {
     @GetMapping("/logs")
     public List<String> logs() {
         return List.of("User root created order VPS1", "Voucher ABC123 used");
-    }
+    } 
 }

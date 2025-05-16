@@ -434,7 +434,6 @@ public ResponseEntity<?> placeOrder(@RequestBody Order order) {
 
     @GetMapping("/my")
     public List<Order> myOrders() {
-        log.info("Récupération de toutes les commandes (pas filtrées par utilisateur)");
         return orderRepo.findAll();
     }
 
@@ -442,4 +441,28 @@ public ResponseEntity<?> placeOrder(@RequestBody Order order) {
     public String ping() {
         return "pong";
     }
+
+    @GetMapping("/user/{userId}")
+public ResponseEntity<?> getOrdersByUser(@PathVariable Long userId) {
+    List<Order> orders = orderRepo.findByUserId(userId);
+
+    if (orders.isEmpty()) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                             .body("Aucune commande trouvée pour l'utilisateur ID " + userId);
+    }
+
+    // Charger manuellement les services et vouchers
+    for (Order order : orders) {
+        if (order.getService() != null) {
+            order.setService(serviceRepo.findById(order.getService().getId()).orElse(null));
+        }
+        if (order.getVoucher() != null) {
+            order.setVoucher(voucherRepo.findById(order.getVoucher().getCode()).orElse(null));
+        }
+    }
+
+    return ResponseEntity.ok(orders);
+}
+
+
 }
