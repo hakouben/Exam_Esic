@@ -1,0 +1,190 @@
+---
+# tasks file for provision_vm_on_proxmox_nested
+
+- name: "Debug incoming variables"
+  ansible.builtin.debug:
+    msg:
+      - "Client ID: {{ client_id }}"
+      - "Client Hostname: {{ client_hostname }}"
+      - "Plan Type: {{ plan_type }}"
+      - "VM Specs: Cores={{ vm_cores }}, Memory={{ vm_memory_mb }}MB, Disk={{ vm_disk_gb }}GB"
+      - "Proxmox API Target: Host={{ pve_api_host }}, User={{ pve_api_user | regex_replace('@pve!.*', '@pve!TOKEN_ID_HIDDEN') }}, Node={{ pve_node }}"
+      - "Template: {{ template_name }}, Bridge: {{ client_vm_bridge }}, Storage: {{ client_vm_storage }}"
+      - "CloudInit User: {{ cloudinit_user }}"
+      - "Validate Certs: {{ proxmox_validate_certs }}"
+
+- name: "Determine next available VMID on VM102 Proxmox"
+  community.general.proxmox_next_id:
+    api_user: "{{ pve_api_user }}"
+    api_password: "{{ pve_api_password }}"
+    api_host: "{{ pve_api_host }}"
+    node: "{{ pve_node }}" # Le nœud Proxmox DANS VM 102
+    validate_certs: "{{ proxmox_validate_certs }}"
+  register: next_vmid_info
+
+- name: "Set new_vmid fact"
+  ansible.builtin.set_fact:
+    new_vmid: "{{ next_vmid_info.id }}"
+
+- name: "Debug: Determined new VMID"
+  ansible.builtin.debug:
+    var: new_vmid
+
+- name: "Clone VM from template '{{ template_name }}' to '{{ client_hostname }}' (VMID {{ new_vmid }})"
+  community.general.proxmox_kvm:
+    api_user: "{{ pve_api_user }}"
+    api_password: "{{ pve_api_password }}"
+    api_host: "{{ pve_api_host }}"
+    validate_certs: "{{ proxmox_validate_certs }}"
+    node: "{{ pve_node }}"
+    vmid: "{{ new_vmid }}"
+    name: "{{ client_hostname }}"
+    clone: "{{ template_name }}"
+    full: true # Full clone
+    timeout: 360 # Timeout pour le clonage en secondes
+    description: "Client: {{ client_id }}\nPlan: {{ plan_type }}\nProvisioned: {{ ansible_date_time.iso8601 }}"
+    state: present
+  register: clone_result
+
+- name: "Debug: Clone result"
+  ansible.builtin.debug:
+    var: clone_result
+  when: clone_result is defined
+
+- name: "Configure VM resources, Cloud-Init, and network for '{{ client_hostname }}' (VMID {{ new_vmid }})"
+  community.general.proxmox_kvm:
+    api_user: "{{ pve_api_user }}"
+    api_password: "{{ pve_api_password }}"
+    api_host: "{{ pve_api_host }}"
+    validate_certs: "{{ proxmox_validate_certs }}"
+    node: "{{ pve_node }}"
+    vmid: "{{ new_vmid }}" # Important de cibler la VM clonée par son ID
+    state: present # On modifie une VM existante
+
+    cores: "{{ vm_cores }}"
+    memory: "{{ vm_memory_mb }}"
+    # Pour le disque, on assume que le template a un disque (ex: scsi0 ou virtio0).
+    # On va redimensionner ce disque. Le nom du disque ('scsi0', 'virtio0') dépend du template.
+    # Il faut vérifier le nom du disque dans le template sur VM 102. Supposons 'scsi0'.
+    disk: "scsi0:+{{ vm_disk_gb - 10 }}G" # Exemple: si template a 10G et on veut 50G, on ajoute +40G.
+                                        # Alternative: disk: "scsi0:{{ client_vm_storage }}:{{ vm_disk_gb }}"
+                                        # Cela remplace le disque (si possible) ou le crée. Plus simple si le template a un disque minimal.
+                                        # Pour redimensionner: `disk_resize: {scsi0: "{{ vm_disk_gb }}G"}` -- vérifier la syntaxe exacte du module.
+                                        # Le module proxmox_kvm permet `update: true` pour appliquer les changements.
+                                        # La manière la plus simple est souvent que le template ait un disque de taille minimale,
+                                        # et on configure la taille voulue au clonage ou juste après.
+                                        # Si on clone, la taille du disque du template est utilisée.
+                                        # On peut ensuite redimensionner. Cloud-Init peut étendre le FS.
+
+    # Pour le disque principal (s'il a été cloné):
+    # Il faut spécifier le device (ex: scsi0, virtio0) et la taille souhaitée.
+    # Le module peut ne pas directement redimensionner un disque existant via ce paramètre 'disk'.
+    # On utilise plutôt les paramètres spécifiques de redimensionnement de disque si disponibles
+    # ou on s'assure que le template est petit et cloud-init gère l'expansion.
+    # Proxmox API permet `qm resize <vmid> <disk> <size>`
+    # Le module community.general.proxmox_disk peut être plus adapté pour le redimensionnement post-clonage.
+    # Pour l'instant, on se fie à cloud-init pour étendre la partition si l'OS le supporte.
+
+    # Configuration réseau (net0)
+    net0: "model=virtio,bridge={{ client_vm_bridge }},firewall=0"
+
+    # Cloud-Init (template doit avoir cloud-init installé et qemu-guest-agent)
+    cloudinit_ipconfig_ip4: "dhcp" # Ou "static,address=10.10.0.X/24,gateway=10.10.0.1" si vous gérez les IP statiques
+    cloudinit_dns_servers: "10.10.0.1, 8.8.8.8" # DNS de VM102 (passerelle) et un DNS public
+    cloudinit_searchdomain: "clients.votreprojet.local"
+    cloudinit_user: "{{ cloudinit_user }}"
+    # cloudinit_password: "{{ client_initial_password }}" # Non recommandé, utiliser les clés SSH
+    cloudinit_ssh_public_keys: "{{ client_ssh_keys | join ('\n') }}" # Joindre la liste de clés en une chaîne multi-lignes
+
+    # Personnalisation Cloud-Init via user data (YAML)
+    # Ceci est fusionné avec les paramètres cloudinit_* ci-dessus
+    cloudinit_custom: |
+      #cloud-config
+      hostname: "{{ client_hostname }}"
+      manage_etc_hosts: true
+      users:
+        - name: "{{ cloudinit_user }}"
+          sudo: ['ALL=(ALL) NOPASSWD:ALL']
+          groups: [users, admin, sudo]
+          shell: /bin/bash
+          ssh_authorized_keys:
+            {{ client_ssh_keys | map('indent', 6) | join('\n') }}
+      # Commandes à exécuter au premier boot (après l'installation des paquets)
+      runcmd:
+        - [ sh, -c, 'echo "VM {{ client_hostname }} provisionnée par Ansible et Cloud-Init" > /etc/motd' ]
+        - [ sh, -c, 'echo "Client ID: {{ client_id }}, Plan: {{ plan_type }}" >> /etc/vm_info.txt' ]
+        - [ systemctl, restart, sshd ] # S'assurer que sshd prend en compte les nouvelles clés/configs
+      # Mettre à jour et installer qemu-guest-agent si pas déjà à jour dans le template
+      package_update: true
+      package_upgrade: true
+      packages:
+        - qemu-guest-agent
+        # - unattended-upgrades # Pour les mises à jour de sécurité automatiques
+        # - fail2ban
+      # Configurer l'agent QEMU pour qu'il soit actif
+      qemu_guest_agent:
+        enabled: true
+        state: running # (Syntaxe à vérifier, peut être géré par l'installation du paquet)
+
+    onboot: true # Démarrer la VM après configuration
+    agent: "enabled=1,fstrim_cloned_disks=1" # Activer qemu-guest-agent et fstrim (si SSD/Thin)
+    # cpuunits: "{{ (plan_type == 'VPS-P1') | ternary(2048, 1024) }}" # Donner plus de poids CPU à VPS-P1
+
+  register: config_result
+
+- name: "Debug: Configuration result"
+  ansible.builtin.debug:
+    var: config_result
+  when: config_result is defined
+
+# Pas besoin de démarrer explicitement si onboot=true et que la config a été appliquée.
+# Mais pour s'assurer qu'elle est démarrée :
+- name: "Ensure VM '{{ client_hostname }}' (VMID {{ new_vmid }}) is started"
+  community.general.proxmox_kvm:
+    api_user: "{{ pve_api_user }}"
+    api_password: "{{ pve_api_password }}"
+    api_host: "{{ pve_api_host }}"
+    validate_certs: "{{ proxmox_validate_certs }}"
+    node: "{{ pve_node }}"
+    vmid: "{{ new_vmid }}"
+    state: started
+  register: start_result
+
+- name: "Wait for VM to boot and qemu-guest-agent to report IP (timeout 300s)"
+  community.general.proxmox_guest_info:
+    api_user: "{{ pve_api_user }}"
+    api_password: "{{ pve_api_password }}"
+    api_host: "{{ pve_api_host }}"
+    validate_certs: "{{ proxmox_validate_certs }}"
+    node: "{{ pve_node }}"
+    vmid: "{{ new_vmid }}"
+  register: guest_ip_info
+  until: "guest_ip_info.default_ipv4_address is defined and guest_ip_info.default_ipv4_address != ''"
+  retries: 20  # 20 * 15s = 300s = 5 minutes
+  delay: 15    # secondes
+  when: start_result.changed or config_result.changed or clone_result.changed # Seulement si on a fait une action sur la VM
+
+- name: "Display VM IP Address from qemu-guest-agent"
+  ansible.builtin.debug:
+    msg: "VM {{ client_hostname }} (VMID {{ new_vmid }}) IP Address: {{ guest_ip_info.default_ipv4_address | default('Not available or VM not ready.') }}"
+  when: guest_ip_info is defined
+
+- name: "Set fact for client VM IP (for Jenkins or subsequent plays)"
+  ansible.builtin.set_fact:
+    created_client_vm_ip: "{{ guest_ip_info.default_ipv4_address | default('N/A') }}"
+    created_client_vmid: "{{ new_vmid }}"
+    created_client_hostname: "{{ client_hostname }}"
+  when: guest_ip_info is defined
+
+# (Optionnel) Ajouter la nouvelle VM à l'inventaire en mémoire pour une configuration ultérieure
+# Si vous avez un rôle 'configure_base_client_os' par exemple.
+- name: "Add new host to in-memory inventory for potential further configuration"
+  ansible.builtin.add_host:
+    name: "{{ client_hostname }}"
+    groups: client_vms_on_vm102
+    ansible_host: "{{ created_client_vm_ip }}"
+    ansible_user: "{{ cloudinit_user }}" # L'utilisateur configuré par cloud-init
+    ansible_ssh_private_key_file: "/var/lib/jenkins/.ssh/id_rsa_ansible" # Clé privée de jenkins@vm105, dont la publique est dans client_ssh_keys
+    # Autres variables nécessaires pour la connexion ou la configuration
+    client_plan: "{{ plan_type }}"
+  when: created_client_vm_ip != 'N/A'

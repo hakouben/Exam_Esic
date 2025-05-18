@@ -1,0 +1,3 @@
+# roles/provision_vm_on_proxmox_nested/defaults/main.yml
+# Exemple:
+# default_cloudinit_timeout: 300 # Secondes pour attendre que cloud-init finisse

@@ -1,0 +1,14 @@
+# Variables pour l'interaction avec l'API Proxmox de VM 102
+# Ces valeurs sont des 'defaults' et seront typiquement surchargées par Jenkins
+# pve_api_host_vm102: "192.168.1.102" # IP de VM 102 (sera passée par Jenkins)
+# pve_api_user_vm102: "user@pve!tokenid" # Sera passé par Jenkins
+# pve_api_token_secret_vm102: "secret" # Sera passé par Jenkins
+pve_node_vm102: "pve-vm102"             # Nom du nœud Proxmox DANS VM 102 (souvent son hostname)
+proxmox_validate_certs_vm102: false    # Mettre à true si VM 102 a un certificat SSL valide, sinon false pour auto-signé
+
+# Configuration par défaut pour les VMs clientes DANS VM 102
+default_template_name_vm102: "ubuntu-base-template-client"
+default_client_vm_bridge_vm102: "vmbr1"     # Bridge réseau DANS VM 102 pour les clients
+default_client_vm_storage_vm102: "local-lvm" # Stockage pour les disques des VMs clientes DANS VM 102
+default_cloudinit_user: "ubuntu"
+default_client_ssh_public_key: "ssh-rsa AAAA...jenkins@vm105" # Clé publique de jenkins@vm105 pour se connecter aux VMs clientes. À remplacer!
