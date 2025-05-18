@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/rules-of-hooks */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // import React, { useState, useEffect } from "react";
 // import { useNavigate } from "react-router-dom";
 // import Navbar from "@/components/layout/Navbar";
@@ -328,18 +330,43 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogFooter,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import PlanForm from "@/components/admin/PlanForm";
 import VoucherForm from "@/components/admin/VoucherForm";
 import { isAuthenticated, isAdmin } from "@/lib/authUtils";
 import { vouchers, orders } from "@/lib/data";
 import { toast } from "sonner";
-import { Plus, Edit, Trash2, CircleOff } from "lucide-react";
+import {
+  Plus,
+  Edit,
+  Trash2,
+  CircleOff,
+  AlertTriangle,
+  ArrowUp,
+} from "lucide-react";
 import { ServiceOffer } from "@/lib/types"; // Utilise ton interface du modèle API
 import AddServiceForm from "@/components/dashboard/AddServiceForm";
 import VoucherUpdateForm from "@/components/admin/VoucherUpdateForm";
 
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+
+import { Input } from "@/components/ui/input";
+import { getAuthenticatedUser } from "@/lib/authUtils";
+
 const AdminDashboard = () => {
+  const user = getAuthenticatedUser(); // récupère user connecté
   const navigate = useNavigate();
   const [plans, setPlans] = useState<ServiceOffer[]>([]);
   const [voucherList, setVoucherList] = useState(vouchers);
@@ -439,6 +466,126 @@ const AdminDashboard = () => {
     fetchMyOrders();
   }, []); // [] = appel uniquement au chargement
 
+  const [users, setUsers] = useState([]);
+  useEffect(() => {
+    axios
+      .get("http://localhost:8082/admin/users")
+      .then((res) => {
+        setUsers(res.data);
+      })
+      .catch((err) => {
+        console.error("Erreur lors du chargement des utilisateurs:", err);
+      });
+  }, []);
+
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<number | null>(null);
+  const [isPromoteModalOpen, setIsPromoteModalOpen] = useState(false);
+  const [userToPromote, setUserToPromote] = useState<number | null>(null);
+
+  const openDeleteModal = (id: number) => {
+    setUserToDelete(id);
+    setIsDeleteModalOpen(true);
+  };
+
+  const closeDeleteModal = () => {
+    setIsDeleteModalOpen(false);
+    setUserToDelete(null);
+  };
+
+  const openPromoteModal = (id: number) => {
+    setUserToPromote(id);
+    setIsPromoteModalOpen(true);
+  };
+
+  const closePromoteModal = () => {
+    setIsPromoteModalOpen(false);
+    setUserToPromote(null);
+  };
+
+  const handleDelete = async () => {
+    if (userToDelete === null) return;
+    try {
+      await axios.delete(`http://localhost:8082/admin/users/${userToDelete}`);
+      setUsers((prev) => prev.filter((u) => u.id !== userToDelete));
+      closeDeleteModal();
+    } catch (err) {
+      console.error("Erreur suppression :", err);
+      // Optionnel : afficher une erreur utilisateur
+    }
+  };
+
+  const handleChangeRole = async () => {
+    if (userToPromote === null) return;
+
+    try {
+      const res = await axios.put(
+        `http://localhost:8082/admin/users/${userToPromote}/role`
+      );
+
+      const updatedUser = res.data;
+
+      setUsers((prevUsers) =>
+        prevUsers.map((user) =>
+          user.id === userToPromote ? updatedUser : user
+        )
+      );
+
+      closePromoteModal();
+    } catch (err) {
+      console.error("Erreur changement de rôle :", err);
+    }
+  };
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+
+  const openModal = () => {
+    setPasswordError("");
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+  };
+
+  const handleCreateAdmin = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault(); // éviter comportement par défaut qui ferme modal
+
+    if (password.length < 8) {
+      setPasswordError("Le mot de passe doit contenir au moins 8 caractères.");
+      return; // Ne ferme pas le modal
+    }
+    setPasswordError("");
+
+    try {
+      await axios.post("http://localhost:8082/auth/register", {
+        username,
+        password,
+        role: "ADMIN",
+      });
+
+      setUsername("");
+      setPassword("");
+      setIsModalOpen(false); // fermer le modal uniquement ici
+
+      const res = await axios.get("http://localhost:8082/admin/users");
+      setUsers(res.data);
+    } catch (err) {
+      console.error("Erreur création admin:", err);
+    }
+  };
+
+  useEffect(() => {
+    if (isModalOpen) {
+      setPasswordError("");
+      setUsername("");
+      setPassword("");
+    }
+  }, [isModalOpen]);
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -520,8 +667,111 @@ const AdminDashboard = () => {
         </div>
       )}
 
+      {/* List user Modals  */}
+
+      {/* Create new admin modal */}
+      {isModalOpen && (
+        <AlertDialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Créer un nouvel admin</AlertDialogTitle>
+              <AlertDialogDescription>
+                Entrez les informations de l'administrateur à créer.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+
+            <div className="flex flex-col gap-4">
+              <Input
+                type="email"
+                placeholder="Email"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+              />
+              <Input
+                placeholder="Mot de passe"
+                type="password"
+                value={password}
+                minLength={8}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+
+              {passwordError && (
+                <p className="text-red-500 text-xs">{passwordError}</p>
+              )}
+            </div>
+
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={closeModal}>
+                Annuler
+              </AlertDialogCancel>
+              <AlertDialogAction
+                onClick={(e) => {
+                  e.preventDefault(); // Empêche fermeture auto par défaut
+                  handleCreateAdmin(e);
+                }}
+              >
+                Créer
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
+
+      {/* Modal delete confirmation */}
+      <Dialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center justify-center gap-2">
+              <AlertTriangle className="text-red-500" />
+              Confirmer la suppression
+            </DialogTitle>
+            <DialogDescription>
+              Êtes-vous sûr de vouloir supprimer cet utilisateur ? Cette action
+              est irréversible.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex justify-end gap-2">
+            <Button variant="outline" onClick={closeDeleteModal}>
+              Annuler
+            </Button>
+            <Button variant="destructive" onClick={handleDelete}>
+              Supprimer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal promouvoir confirmation */}
+
+      {isPromoteModalOpen && (
+        <AlertDialog
+          open={isPromoteModalOpen}
+          onOpenChange={setIsPromoteModalOpen}
+        >
+          <AlertDialogContent>
+            <div className="flex items-center justify-center gap-2">
+              <ArrowUp className="h-6 w-6 text-blue-500" />
+              <AlertDialogTitle>Confirmer la promotion</AlertDialogTitle>
+            </div>
+            <AlertDialogDescription>
+              Êtes-vous sûr de vouloir promouvoir cet utilisateur en admin ?
+            </AlertDialogDescription>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={closePromoteModal}>
+                Annuler
+              </AlertDialogCancel>
+              <AlertDialogAction onClick={handleChangeRole}>
+                Promouvoir
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
+
+      {/* End List user Modals  */}
+
       <div className="flex-grow bg-gray-50">
-        <div className="max-w-10xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <h1 className="text-2xl font-bold mb-2">Admin Dashboard</h1>
           <p className="text-gray-600 mb-8">
             Manage hosting plans, vouchers, and orders
@@ -545,7 +795,68 @@ const AdminDashboard = () => {
               <TabsTrigger value="plans">Hosting Plans</TabsTrigger>
               <TabsTrigger value="vouchers">Vouchers</TabsTrigger>
               <TabsTrigger value="orders">Orders</TabsTrigger>
+              <TabsTrigger value="users">List users</TabsTrigger>
             </TabsList>
+
+            {/* === USERS === */}
+            <TabsContent value="users">
+              <Card>
+                <div className="flex items-center justify-between px-6 py-4">
+                  <div>
+                    <CardTitle>All Users</CardTitle>
+                  </div>
+                  <div>
+                    <Button onClick={openModal}>Add new admin</Button>
+                  </div>
+                </div>
+                <CardContent className="overflow-x-auto">
+                  <div className="min-w-[800px] border rounded-md divide-y">
+                    <div className="grid grid-cols-4 gap-4 px-4 py-3 font-medium bg-gray-50 text-sm">
+                      <div>ID</div>
+                      <div>Username</div>
+                      <div>Role</div>
+                      <div>Actions</div>
+                    </div>
+
+                    {users.map((u) => (
+                      <div
+                        key={u.id}
+                        className="grid grid-cols-4 gap-4 px-4 py-3 text-sm items-center"
+                      >
+                        <div>{u.id}</div>
+                        <div>
+                          {u.username}{" "}
+                          {u.username === user?.name && (
+                            <span className="text-gray-500">(vous)</span>
+                          )}
+                        </div>
+                        <div>{u.role}</div>
+                        <div className="flex gap-2">
+                          {/* On ne montre pas le bouton supprimer si c'est l'utilisateur connecté */}
+                          {u.username !== user?.name && (
+                            <button
+                              className="px-2 py-1 text-white bg-red-500 rounded hover:bg-red-600 text-xs"
+                              onClick={() => openDeleteModal(u.id)}
+                            >
+                              Supprimer
+                            </button>
+                          )}
+
+                          {u.role === "USER" && (
+                            <button
+                              className="px-2 py-1 text-white bg-blue-500 rounded hover:bg-blue-600 text-xs"
+                              onClick={() => openPromoteModal(u.id)} // ouverture modal promotion
+                            >
+                              Promouvoir
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
 
             {/* === PLANS === */}
             <TabsContent value="plans">

@@ -365,6 +365,7 @@ const Auth = () => {
       const data = await res.json();
       toast.success("Account created for " + data.username);
       setActiveTab("login");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setRegisterError("Error: " + err.message);
     }
