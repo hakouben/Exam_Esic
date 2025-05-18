@@ -27,7 +27,7 @@ public class AuthController {
     private PasswordEncoder passwordEncoder;
 
     @PostMapping("/login")
-public ResponseEntity<?> login(@RequestBody LoginRequest req) {
+    public ResponseEntity<?> login(@RequestBody LoginRequest req) {
     Optional<User> existingOpt = userRepository.findByUsername(req.username);
 
     if (existingOpt.isPresent() && passwordEncoder.matches(req.password, existingOpt.get().getPassword())) {

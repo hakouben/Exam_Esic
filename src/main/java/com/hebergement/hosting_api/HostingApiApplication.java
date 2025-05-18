@@ -20,7 +20,7 @@ public class HostingApiApplication {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**") // autorise toutes les routes
-                        .allowedOrigins("http://localhost:8081") // autorise ton frontend
+                        .allowedOrigins("http://localhost:8080") // autorise ton frontend
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*")
                         .allowCredentials(true);
