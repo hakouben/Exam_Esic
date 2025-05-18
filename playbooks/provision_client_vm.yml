@@ -1,0 +1,45 @@
+---
+- name: Provision a new client VM on Nested Proxmox (VM 102)
+  hosts: vm102_proxmox_api_target # Cible 'localhost' défini dans l'inventaire
+  gather_facts: false
+  connection: local # Exécute les tâches localement sur VM 105
+
+  # Ces variables sont attendues de Jenkins via --extra-vars
+  # Elles sont listées ici pour la clarté et pour fournir des valeurs par défaut si le playbook est lancé manuellement.
+  vars:
+    # Infos client et plan
+    client_id: "{{ jenkins_client_id | default('testuser01') }}"
+    client_hostname: "{{ jenkins_client_hostname | default('testvm01') }}"
+    plan_type: "{{ jenkins_plan_type | default('VPS-S2') }}" # Ex: VPS-S2, VPS-P1
+
+    # Spécifications de la VM (dérivées du plan_type par Jenkins et passées ici)
+    vm_cores: "{{ jenkins_vm_cores | default(1) }}"
+    vm_memory_mb: "{{ jenkins_vm_memory_mb | default(2048) }}"
+    vm_disk_gb: "{{ jenkins_vm_disk_gb | default(20) }}"
+    # vm_disk_type: "{{ jenkins_vm_disk_type | default('ssd') }}" # 'ssd' ou 'nvme' (influence cpuunits, type de stockage si différent)
+
+    # Infos API Proxmox pour VM 102 (passées par Jenkins)
+    # Ces noms doivent correspondre à ceux utilisés dans le Jenkinsfile (PVE_API_USER_VM102, etc.)
+    # Le Jenkinsfile va créer des variables d'environnement ou les passer directement.
+    # Ici, on s'attend à ce que Jenkins passe des variables comme `jenkins_pve_api_user_vm102`
+    pve_api_user: "{{ jenkins_pve_api_user_vm102 }}"
+    pve_api_password: "{{ jenkins_pve_api_token_secret_vm102 }}"
+    pve_api_host: "{{ jenkins_pve_api_host_vm102 | default('192.168.1.102') }}"
+    pve_node: "{{ jenkins_pve_node_vm102 | default(pve_node_vm102) }}" # Utilise group_var si non fourni par Jenkins
+    proxmox_validate_certs: "{{ jenkins_proxmox_validate_certs_vm102 | default(proxmox_validate_certs_vm102) }}"
+
+    # Autres configurations (peuvent venir de group_vars ou être surchargées par Jenkins)
+    template_name: "{{ jenkins_template_name_vm102 | default(default_template_name_vm102) }}"
+    client_vm_bridge: "{{ jenkins_client_vm_bridge_vm102 | default(default_client_vm_bridge_vm102) }}"
+    client_vm_storage: "{{ jenkins_client_vm_storage_vm102 | default(default_client_vm_storage_vm102) }}"
+    cloudinit_user: "{{ jenkins_cloudinit_user | default(default_cloudinit_user) }}"
+    client_ssh_keys: # Liste de clés SSH à injecter
+      - "{{ jenkins_client_ssh_public_key | default(default_client_ssh_public_key) }}"
+      # Vous pouvez ajouter d'autres clés ici si nécessaire ou les passer via Jenkins
+    # client_initial_password: "{{ jenkins_client_initial_password | default(' définir un mot de passe aléatoire ') }}" # Non recommandé, préférer les clés SSH
+
+  roles:
+    - role: provision_vm_on_proxmox_nested
+      # Les variables définies ci-dessus sont automatiquement disponibles pour le rôle.
+      # Si le rôle attend des noms de variables différents, on peut les mapper ici:
+      # role_var_name: "{{ playbook_var_name }}"
