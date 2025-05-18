@@ -1,0 +1,36 @@
+// ... (dans le stage 'Run Ansible Playbook to Provision VM')
+                        script {
+                            // ... (récupération des credentials PVE_API_USER_VM102, PVE_API_TOKEN_VM102_SECRET)
+
+                            def extraVars = [
+                                "jenkins_client_id": env.USER_ID,
+                                "jenkins_client_hostname": env.CLIENT_HOSTNAME,
+                                "jenkins_plan_type": env.PLAN_TYPE,
+                                "jenkins_vm_cores": env.VM_CORES, // Calculé dans un stage précédent
+                                "jenkins_vm_memory_mb": env.VM_MEMORY_MB, // Calculé
+                                "jenkins_vm_disk_gb": env.VM_DISK_GB, // Calculé
+                                // "jenkins_vm_disk_type": env.VM_DISK_TYPE, // Si utilisé
+
+                                "jenkins_pve_api_user_vm102": PVE_API_USER_VM102,
+                                "jenkins_pve_api_token_secret_vm102": PVE_API_TOKEN_VM102_SECRET,
+                                "jenkins_pve_api_host_vm102": "192.168.1.102", // Ou depuis une variable globale Jenkins
+                                "jenkins_pve_node_vm102": "pve-vm102", // Ou depuis group_vars
+                                "jenkins_proxmox_validate_certs_vm102": false, // Ou depuis group_vars
+
+                                "jenkins_template_name_vm102": "ubuntu-base-template-client", // Ou depuis group_vars
+                                "jenkins_client_vm_bridge_vm102": "vmbr1", // Ou depuis group_vars
+                                "jenkins_client_vm_storage_vm102": "local-lvm", // Ou depuis group_vars
+                                "jenkins_cloudinit_user": "ubuntu", // Ou depuis group_vars
+                                "jenkins_client_ssh_public_key": "ssh-rsa AAAA...votrecle@machine" // À remplacer par la vraie clé
+                            ]
+                            def extraVarsString = extraVars.collect { k, v ->
+                                // Gérer correctement les chaînes avec espaces ou caractères spéciaux si nécessaire
+                                (v instanceof String) ? "-e ${k}='${v}'" : "-e ${k}=${v}"
+                            }.join(" ")
+
+                            sh """
+                                ANSIBLE_FORCE_COLOR=true \
+                                ansible-playbook -i ${env.ANSIBLE_INVENTORY} ${env.ANSIBLE_PLAYBOOK} ${extraVarsString}
+                            """
+                        }
+// ...
